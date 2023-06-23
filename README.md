@@ -1,2 +1,6 @@
 # ocr-research
- research project about OCR
+research project about OCR
+
+# dependencies
+- tesseract-ocr
+- PyMuPDF
