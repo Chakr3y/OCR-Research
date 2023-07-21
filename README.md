@@ -20,7 +20,7 @@ If the output is inaccurate, try expanding the scanning area.
 - Format - a configuration that determines the areas to scan in each file, meaning that each file scanned needs to be in the same "format".
 
 # dependencies
-\(You can just install using [requirements.txt](/requirements.txt)\)
+With the exception of tesseract, you can install using [requirements.txt](/requirements.txt).
 - [tesseract](https://github.com/tesseract-ocr/tesseract)
 - PyMuPDF
 - Pillow
