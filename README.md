@@ -10,7 +10,11 @@ research project about OCR
 		1. Click on the PDF to make bounding boxes, where the program will later OCR the text.
 			- Due to limited editing functions, you will have to restart the process if you mess up.
 		1. Click next. The Format selection box will open again.
-1. The output file can be found in the output folder of the directory.
+1. The output file can be found in the `output` folder of the directory.
+
+- For the time being, Formats can be deleted by deleting the file with the corresponding name in the `formats` folder.
+
+If the output is inaccurate, try expanding the scanning area.
 
 # terminology
 - Format - a configuration that determines the areas to scan in each file, meaning that each file scanned needs to be in the same "format".
