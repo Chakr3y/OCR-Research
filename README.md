@@ -14,7 +14,8 @@ research project about OCR
 
 - For the time being, Formats can be deleted by deleting the file with the corresponding name in the `formats` folder.
 
-If the output is inaccurate, try expanding the scanning area.
+If the output is inaccurate, try expanding the scanning area.\
+Currently, the program only scans English characters. Language support will be added to support installed language packs for tesseract.
 
 # terminology
 - Format - a configuration that determines the areas to scan in each file, meaning that each file scanned needs to be in the same "format".
