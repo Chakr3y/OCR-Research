@@ -28,3 +28,8 @@ With the exception of tesseract, you can install using [requirements.txt](/requi
 - pytesseract
 
 **Note**: Make sure that the directory `C:/Program Files/Tesseract-OCR/tessdata` exists \(and that `tesseract` is registered as a CMD command?\).
+
+# todo
+x Refactor for readability
+x Finish Format creator UI
+x Enhance OCR
