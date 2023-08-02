@@ -13,9 +13,9 @@ research project about OCR
 1. The output file can be found in the `output` folder of the directory.
 
 - For the time being, Formats can be deleted by deleting the file with the corresponding name in the `formats` folder.
+- The program will automatically detect installed language packs for tesseract.
 
-If the output is inaccurate, try expanding the scanning area.\
-Currently, the program only scans English characters. Language support will be added to support installed language packs for tesseract.
+If the output is inaccurate, try expanding the scanning area.
 
 # terminology
 - Format - a configuration that determines the areas to scan in each file, meaning that each file scanned needs to be in the same "format".
@@ -32,7 +32,7 @@ With the exception of tesseract, you can install using [requirements.txt](/requi
 # todo
 - [ ] Refactor for readability
 - Finish Format creator UI
-	- [ ] Language selection
+	- [x] Language selection
 	- [ ] Undo button
 	- [ ] Correctly display correct areas of page
 - Enhance OCR

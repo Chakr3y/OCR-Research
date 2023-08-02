@@ -2,31 +2,34 @@ import os, sys, time
 import csv # data output
 import pickle # format saving/loading
 import configparser # config file
+from FormatTools import *
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilenames
-from tkinter.simpledialog import askstring
+from tkinter.simpledialog import askstring, Dialog
 from tkinter.messagebox import showerror
+
 import fitz
 from PIL import Image, ImageTk
-from FormatTools import *
 import pytesseract as pytess
 
 # script's directory
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 # import configuration
-configpath = os.path.join(DIR, 'config.ini')
+CONFIG_PATH = os.path.join(DIR, 'config.ini')
 config = configparser.ConfigParser()
-config.read(configpath)
-PRELOAD = config.getboolean('CONSTANT', 'preload_pdf')
+config.read(CONFIG_PATH)
+DO_PRELOAD = config.getboolean('CONSTANT', 'preload_pdf')
 OUTPUT_DIR = os.path.join(DIR, config.get('CONSTANT', 'output'))
 
 # variable for caching assets
-ASSETCACHE = []
+ASSET_CACHE = []
 
-# language to scan for [TEMPORARY]
-lang = "eng"
+# available language packs installed for tesseract
+LANGS = pytess.get_languages()
+if "osd" in LANGS: LANGS.remove("osd")
 
 if sys.platform == 'win32':
 	# Adjust window resolution
@@ -41,7 +44,7 @@ if len(FILES) == 0:
 	sys.exit()
 # save paths for last opened files
 config['file']['lastopened'] = str(FILES)[1:-1].replace(',','').replace("'",'"')
-with open(configpath, 'w') as cf: config.write(cf)
+with open(CONFIG_PATH, 'w') as cf: config.write(cf)
 print(f"\nReading from {[os.path.basename(x) for x in FILES]}\n")
 
 cur_doc = 0
@@ -66,8 +69,10 @@ root.withdraw()
 format_list: list[str] = None
 def format_select():
 	global format_list
-	# update list
-	format_list = [os.path.splitext(os.path.basename(x))[0] for x in os.listdir(os.path.join(DIR, "formats"))]
+	# update list of saved formats
+	format_list = [os.path.splitext(os.path.basename(x)) for x in os.listdir(os.path.join(DIR, "formats"))]
+	format_list = filter(lambda x: x[1] == ".pkl", format_list)
+	format_list = [x[0] for x in format_list]
 
 	str_create = "Create a new Format..."
 	format_list.append(str_create)
@@ -112,7 +117,7 @@ def create_format():
 		format_select()
 		return
 	
-	while f_name in format_list: # duplicate name
+	while f_name in format_list: # name already in use
 		showerror("Error", "This name has already been used by a Format.")
 		f_name = askstring("OCR PDF", "Enter a name for the new Format.", initialvalue=f_name)
 
@@ -126,7 +131,7 @@ def create_format():
 	# configure row 1 (w/canvas) to stretch vertical
 	frame.rowconfigure(1, weight=1)
 
-	# instructions
+	# text instructions
 	instr = ttk.Label(frame, text="Click to make bounding boxes that will be scanned.")
 	instr.grid(row=0, columnspan=2)
 
@@ -137,20 +142,20 @@ def create_format():
 		mode = "RGBA" if pix.alpha else "RGB"
 		return Image.frombytes(mode, [pix.width, pix.height], pix.samples)
 
-	# pdf display
+	# frame for canvas displaying PDF
 	imgframe = ttk.LabelFrame(frame, padding=5, labelanchor='n', text='%i/%i'%(1,pages))
 	imgframe.grid(row=1, column=1, sticky=tk.N+tk.S)
 
 	# load first page onto canvas
-	pg: int = 0 # track page to display
+	pg: int = 0 # current page
 	tkimg = ImageTk.PhotoImage(page_to_img(pg))
-	# use canvas to allow overlaying rectangles
+	# use canvas to allow drawing
 	canvas = tk.Canvas(master=imgframe, width=tkimg.width(), height=tkimg.height())
 	canvas.grid()
 	imgid = canvas.create_image(0, 0, anchor=tk.NW, image=tkimg)
 
 	# handler for canvas events
-	clicked: bool = False
+	clicked: bool = False # remember alternate clicks
 	p1: tuple = (0,0)
 	def canvas_click(e):
 		nonlocal clicked, p1
@@ -174,10 +179,11 @@ def create_format():
 	# have to load these outsize func else garbage collector will yeet them
 	arrowL = ImageTk.PhotoImage(Image.open(os.path.join(DIR,'assets/arrowL.png')).resize((32,64)))
 	arrowR = ImageTk.PhotoImage(Image.open(os.path.join(DIR,'assets/arrowR.png')).resize((32,64)))
-	ASSETCACHE.extend([arrowL, arrowR])
-	def arrow_nav_init():
+	ASSET_CACHE.extend([arrowL, arrowR])
+	def arrow_nav_init(): # initiate navigation through pages
 		arrowLLabel = tk.Label(frame, image=arrowL)
 		arrowRLabel = tk.Label(frame, image=arrowR)
+		# render next to canvas
 		arrowLLabel.grid(row=1, column=0, sticky=tk.E)
 		arrowRLabel.grid(row=1, column=2, sticky=tk.W)
 		def next_page(e): turn_page(1)
@@ -199,13 +205,15 @@ def create_format():
 	arrow_nav_init()
 
 	# separate grid for bottom bar
-	b_line = ttk.Separator(frame)
-	b_line.grid(row=2, column=0, columnspan=3, sticky=tk.W+tk.E)
+	separator = ttk.Separator(frame)
+	separator.grid(row=2, column=0, columnspan=3, sticky=tk.W+tk.E)
+	# separate frame for bottom elements
 	bottom_bar = ttk.Frame(frame, borderwidth=1)
 	bottom_bar.grid(row=3, column=0, columnspan=3, sticky=tk.W+tk.E)
 	bottom_bar.columnconfigure(3, weight=1)
+
 	# Document navigation
-	def docs_nav_init():
+	def docs_nav_init(): # initiate naviation through documents
 		docL = tk.Label(bottom_bar, text=" ← ", relief=tk.GROOVE)
 		docR = tk.Label(bottom_bar, text=" → ", relief=tk.GROOVE)
 		docL.grid(row=0, column=0, sticky=tk.W)
@@ -233,16 +241,59 @@ def create_format():
 	def update_areanum():
 		area_num.config(text="Areas: %i"%len(format))
 
-	# 'Next' button
+	# After areas have been selected
 	def proceed(): # TODO: handle when no areas have been selected
-		# TODO: continue to language selection
-		
-		# save format as a file
-		with open(os.path.join(DIR, "formats", format.name + ".pkl"), 'xb') as f:
-			pickle.dump(format, f)
-		root.withdraw()
-		frame.destroy()
-		format_select()
+
+		class LangSelDialog(Dialog): # lanugage selection
+			def body(self, root = None):
+				# Create a list of options
+				self._options = LANGS
+
+				# for scrolling vertically
+				yscrollbar = tk.Scrollbar(root)
+				yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+				label = tk.Label(root,
+					text = "Select languages to scan for",
+					padx = 10, pady = 10)
+				label.pack()
+				self.lb = tk.Listbox(root, selectmode = "multiple", 
+					yscrollcommand = yscrollbar.set)
+
+				# Widget expands horizontally and vertically by assigning both to fill option
+				self.lb.pack(padx = 10, pady = 10,
+					expand = tk.YES, fill = "both")
+
+				# Add options to the Listbox
+				for option in self._options:
+					self.lb.insert(tk.END, option)
+
+				return root
+
+			# call to determine if selection is appropriate to continue
+			def validate(self):
+				return len(self.lb.curselection()) > 0
+			
+			# called after 'OK' and valid
+			def apply(self):
+				sel = [self.lb.get(i) for i in self.lb.curselection()]
+				#print(sel)
+
+				# set language option for format
+				format.lang = "+".join(x for x in sel)
+				print(format.lang)
+
+				# save format as a file
+				with open(os.path.join(DIR, "formats", format.name + ".pkl"), 'xb') as f:
+					pickle.dump(format, f)
+				
+				# clear the window and go back to format selection
+				root.withdraw()
+				frame.destroy()
+				format_select()
+
+		ls = LangSelDialog(None)
+	
 	btn_next = ttk.Button(bottom_bar, text="Next", command=proceed)
 	btn_next.grid(row=0, column=4, sticky=tk.E)
 
@@ -250,8 +301,10 @@ def create_format():
 # Scan docs using selected format
 def scan_docs(format: Format):
 	root.quit()
+	# put a timestamp in the file name
 	ts = time.strftime('%b-%d-%Y_%H%M%S', time.localtime())
 	#doc[pg].get_pixmap(dpi=300, clip=rect).save()
+
 	with open(os.path.join(OUTPUT_DIR,ts+'.csv'), 'w', newline='') as f:
 		out = csv.writer(f)
 		
@@ -261,8 +314,9 @@ def scan_docs(format: Format):
 			for area in format: # per ScanArea
 				pix = doc[area.page].get_pixmap(dpi=300, clip=area.rect)
 				img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples_mv)
-				rowdata.append(pytess.image_to_string(img, lang))
+				rowdata.append(pytess.image_to_string(img, format.lang))
 			out.writerow(rowdata)
+
 
 format_select()
 

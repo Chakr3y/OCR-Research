@@ -1,14 +1,16 @@
 from typing import overload
 from fitz import Rect, Point
 
-# ScanArea provides a template for saving individual
-# scanned regions within a scan "format".
+
 class ScanArea:
+	"""ScanArea provides a template for saving 
+	individual to-be-scanned regions as an object."""
+
 	@overload
-	def __init__(self, page: int, rect: Rect) -> None:
+	def __init__(self, page: int, rect: Rect):
 		...
 	@overload
-	def __init__(self, page: int, p1: tuple|Point, p2: tuple|Point) -> None:
+	def __init__(self, page: int, p1: tuple|Point, p2: tuple|Point):
 		...
 	def __init__(self, page: int, p1, p2=None):
 		self.page = page
@@ -25,8 +27,9 @@ class ScanArea:
 	def rect(self):
 		return Rect(self.p1, self.p2)
 
-# class for grouping ScanAreas into Formats
 class Format():
+	"""Class for grouping and exporting ScanAreas as Formats."""
+
 	_areas: list[ScanArea]
 
 	def __init__(self, name: str = None, lang: str = 'eng'):
