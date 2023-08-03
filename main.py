@@ -149,7 +149,7 @@ def create_format():
 	imgframe.grid(row=1, column=1, sticky=tk.N+tk.S)
 
 	# load first page onto canvas
-	pg: int = 0 # current page
+	pg: int = 0 # track page number
 	tkimg = ImageTk.PhotoImage(page_to_img(pg))
 	# use canvas to allow drawing
 	canvas = tk.Canvas(master=imgframe, width=tkimg.width(), height=tkimg.height())

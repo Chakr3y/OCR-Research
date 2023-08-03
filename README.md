@@ -32,7 +32,5 @@ With the exception of tesseract, you can install using [requirements.txt](/requi
 # todo
 - [ ] Refactor for readability
 - Finish Format creator UI
-	- [x] Language selection
 	- [ ] Undo button
-	- [ ] Correctly display correct areas of page
 - Enhance OCR
