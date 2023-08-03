@@ -88,7 +88,6 @@ def format_select():
 	select = ttk.Combobox(frame, exportselection=0, values=format_list)
 	select.grid(row=1, column=0, sticky=tk.W+tk.E)
 	# TODO: grey out button when none selected?
-	# buttons
 	def proceed():
 		selection = select.get()
 		if selection == "":
@@ -104,10 +103,13 @@ def format_select():
 				format = pickle.load(f)
 				scan_docs(format)
 		else: pass
-		return		
+		return
 
+	# buttons
 	btn_next = ttk.Button(frame, text="Next", command=proceed)
 	btn_next.grid(row=2, column=0, sticky=tk.E, pady=(20, 0))
+	# TODO pressing enter auto-clicks next
+	#select.bind("<KeyPress-Return>", btn_next.invoke)
 
 
 # Create a Format to specify where to scan for each page.
@@ -152,7 +154,8 @@ def create_format():
 	# use canvas to allow drawing
 	canvas = tk.Canvas(master=imgframe, width=tkimg.width(), height=tkimg.height())
 	canvas.grid()
-	imgid = canvas.create_image(0, 0, anchor=tk.NW, image=tkimg)
+	img_id = canvas.create_image(0, 0, anchor=tk.NW, image=tkimg)
+	get_pg_rects = lambda: "p"+str(pg)
 
 	# handler for canvas events
 	clicked: bool = False # remember alternate clicks
@@ -161,7 +164,8 @@ def create_format():
 		nonlocal clicked, p1
 
 		if clicked:
-			canvas.create_rectangle(p1[0],p1[1],e.x,e.y)
+			# create a red bounding box surrounding the scan area, tag with pg and number
+			canvas.create_rectangle(p1[0],p1[1],e.x,e.y, outline="red", tags=("rect", get_pg_rects(), str(len(format))))
 			rect = fitz.Rect(p1, (e.x, e.y))
 			sa = ScanArea(pg, rect)
 			print(sa.__dict__)
@@ -176,7 +180,7 @@ def create_format():
 	canvas.bind('<Button-1>', canvas_click)
 
 	# Arrow page navigation
-	# have to load these outsize func else garbage collector will yeet them
+	# have to load these outside func else garbage collector will yeet them
 	arrowL = ImageTk.PhotoImage(Image.open(os.path.join(DIR,'assets/arrowL.png')).resize((32,64)))
 	arrowR = ImageTk.PhotoImage(Image.open(os.path.join(DIR,'assets/arrowR.png')).resize((32,64)))
 	ASSET_CACHE.extend([arrowL, arrowR])
@@ -198,8 +202,15 @@ def create_format():
 		pg = (pg + n) % pages
 		imgframe.config(text='%i/%i'%(pg+1,pages)) # update page label
 
+		# change image data
 		tkimg = ImageTk.PhotoImage(page_to_img(pg))
-		canvas.itemconfig(imgid, image=tkimg)
+		canvas.itemconfig(img_id, image=tkimg)
+
+		# display the correct ScanArea rects
+		print(get_pg_rects())
+		canvas.tag_lower("rect", img_id)
+		canvas.tag_raise(get_pg_rects(), img_id)
+
 		return
 
 	arrow_nav_init()
@@ -231,7 +242,7 @@ def create_format():
 		turn_page(0)
 
 	docs_nav_init()
-	# label for current document
+	# label current document num and file name
 	doc_info = ttk.Label(bottom_bar, text="Doc #%i: %s"%(cur_doc+1, os.path.basename(FILES[cur_doc])))
 	doc_info.grid(row=0, column=2, sticky=tk.W)
 	
