@@ -33,8 +33,7 @@ LANGS = pytess.get_languages()
 if "osd" in LANGS: LANGS.remove("osd")
 
 
-if sys.platform == 'win32':
-	# Adjust window resolution
+if sys.platform == 'win32': # Adjust window resolution
 	from ctypes import windll
 	windll.shcore.SetProcessDpiAwareness(1)
 
@@ -59,17 +58,19 @@ pages: int = None
 # Load new file onto 'doc' variable
 def load_doc(n: int):
 	global doc, cur_doc, pages
+
 	if doc is not None: doc.close()
 	doc = fitz.open(FILES[n])
 	cur_doc = n
 	pages = doc.page_count
+	return
 load_doc(cur_doc)
 
 
 # Top level window
 root = tk.Tk()
 root.title("OCR PDF")
-root.withdraw()
+root.withdraw() # start hidden
 
 
 # Format selection menu
@@ -137,15 +138,8 @@ def format_select():
 	w = ttk.Button(btn_box, text="Preview", width=10, command=preview)
 	w.pack(side=tk.RIGHT, padx=5, pady=5)
 
-	#frame.bind("<Return>", proceed)
-
 	btn_box.grid()
-
-	#btn_next = tk.Button(frame, text="Next", command=proceed)
-	#btn_next.grid(row=2, column=0, sticky=tk.E, pady=(20, 0))
-
-	#btn_preview = ttk.Button(frame, text="Preview", command=)
-	#btn_preview.grid()
+	return
 
 
 def page_to_img(page_id) -> Image: # Convert page to image
@@ -370,6 +364,8 @@ def display_pdf(format: Format = None):
 	str_next = "Scan" if PREVIEW else "Next"
 	btn_next = ttk.Button(bottom_bar, text=str_next, command=proceed)
 	btn_next.grid(row=0, column=4, sticky=tk.E)
+	
+	return
 
 
 # Scan docs using selected format
@@ -393,6 +389,7 @@ def scan_docs(format: Format):
 				rowdata.append(pytess.image_to_string(img, format.lang))
 			
 			out.writerow(rowdata)
+	return
 
 
 format_select()
