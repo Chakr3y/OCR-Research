@@ -18,7 +18,7 @@ research project about OCR
 If the output is inaccurate, try expanding the scanning area.
 
 # terminology
-- Format - a configuration that determines the areas to scan in each file, meaning that each file scanned needs to be in the same "format".
+- Format - a configuration that groups areas to scan in each file, meaning that each file scanned needs to have text at the same locations.
 
 # dependencies
 With the exception of tesseract, you can install using [requirements.txt](/requirements.txt).
@@ -30,7 +30,8 @@ With the exception of tesseract, you can install using [requirements.txt](/requi
 **Note**: Make sure that the directory `C:/Program Files/Tesseract-OCR/tessdata` exists \(and that `tesseract` is registered as a CMD command?\).
 
 # todo
-- [ ] Refactor for readability
+- Refactor for readability
 - Finish Format creator UI
 	- [ ] Undo button
+	- [ ] Find a way to label the scan areas
 - Enhance OCR
