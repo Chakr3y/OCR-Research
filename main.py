@@ -101,7 +101,20 @@ def format_select():
 	desc.grid(row=0, column=0, sticky=tk.W)
 	
 	# dropdown selection
-	select = ttk.Combobox(frame, exportselection=0, values=format_list)
+	def verify(): # dynamically react to selection
+		selection = select.get()
+		
+		if selection in format_list:
+			btn_next.state(["!disabled"])
+			btn_preview.state([("" if selection == str_create else "!")+"disabled"])
+
+			return True
+		
+		btn_next.state(["disabled"])
+		btn_preview.state(["disabled"])
+		return False
+	v = frame.register(verify)
+	select = ttk.Combobox(frame, exportselection=0, values=format_list, validate='all', validatecommand=v)
 	select.grid(row=1, column=0, sticky=tk.W+tk.E)
 	
 
@@ -133,10 +146,12 @@ def format_select():
 	# stolen code from Dialog class
 	btn_box = tk.Frame(frame)
 
-	w = ttk.Button(btn_box, text="Next", width=10, command=proceed, default=tk.ACTIVE)
-	w.pack(side=tk.RIGHT, padx=5, pady=5)
-	w = ttk.Button(btn_box, text="Preview", width=10, command=preview)
-	w.pack(side=tk.RIGHT, padx=5, pady=5)
+	btn_next = ttk.Button(btn_box, text="Next", width=10, command=proceed, default=tk.ACTIVE)
+	btn_next.pack(side=tk.RIGHT, padx=5, pady=5)
+	btn_next.state(["disabled"])
+	btn_preview = ttk.Button(btn_box, text="Preview", width=10, command=preview)
+	btn_preview.pack(side=tk.RIGHT, padx=5, pady=5)
+	btn_preview.state(["disabled"])
 
 	btn_box.grid()
 	return
