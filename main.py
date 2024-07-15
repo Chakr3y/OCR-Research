@@ -55,7 +55,7 @@ cur_doc = 0
 doc: fitz.Document = None
 pages: int = None
 
-# Load new file onto 'doc' variable
+# Load new file onto 'doc' variable (memory)
 def load_doc(n: int):
 	global doc, cur_doc, pages
 
@@ -73,12 +73,13 @@ root.title("OCR PDF")
 root.withdraw() # start hidden
 
 
-# Format selection menu
+# load formats
 format_list: list[str] = None
 def format_from_name(name: str) -> Format:
 	with open(os.path.join(DIR, "formats", name+".pkl"), 'rb') as f:
 		return pickle.load(f)
 
+# Format selection menu
 def format_select():
 	global format_list
 
@@ -101,12 +102,17 @@ def format_select():
 	desc.grid(row=0, column=0, sticky=tk.W)
 	
 	# dropdown selection
-	def verify(): # dynamically react to selection
+	def verify(): # buttons react to selection
 		selection = select.get()
 		
-		if selection in format_list:
+		if selection in format_list: # selection matches known Formats
 			btn_next.state(["!disabled"])
-			btn_preview.state([("" if selection == str_create else "!")+"disabled"])
+
+			if selection == str_create: # selection is to create new Format
+				btn_preview.state(["disabled"])
+			else:
+				btn_preview.state(["!disabled"])
+
 
 			return True
 		
@@ -146,7 +152,7 @@ def format_select():
 	# stolen code from Dialog class
 	btn_box = tk.Frame(frame)
 
-	btn_next = ttk.Button(btn_box, text="Next", width=10, command=proceed, default=tk.ACTIVE)
+	btn_next = ttk.Button(btn_box, text="Next/Scan", width=10, command=proceed, default=tk.ACTIVE)
 	btn_next.pack(side=tk.RIGHT, padx=5, pady=5)
 	btn_next.state(["disabled"])
 	btn_preview = ttk.Button(btn_box, text="Preview", width=10, command=preview)
@@ -156,8 +162,8 @@ def format_select():
 	btn_box.grid()
 	return
 
-
-def page_to_img(page_id) -> Image: # Convert page to image
+# Convert page to image
+def page_to_img(page_id) -> Image:
 	pix = doc[page_id].get_pixmap()
 	# set the mode depending on alpha
 	mode = "RGBA" if pix.alpha else "RGB"
@@ -187,12 +193,21 @@ def display_pdf(format: Format = None):
 	frame.pack(expand=1)
 	frame.rowconfigure(1, weight=1) # stretch vertically
 
+	# back button
+	def back(e = None):
+		root.withdraw()
+		frame.destroy()
+		format_select()
+	back_btn = ttk.Button(frame, text="Cancel")
+	back_btn.grid(row=0, column=0, columnspan=2, sticky=tk.W, padx=5)
+	back_btn.bind('<Button-1>', back)
+
 	# text instructions
 	str_instr = "Previewing Format." if PREVIEW\
 		else "Click to make bounding boxes that will be scanned."
 	instr = ttk.Label(frame, text=str_instr)
-	instr.grid(row=0, columnspan=2)
-
+	instr.grid(row=0, column=1)
+	instr.grid_anchor(tk.N)
 
 	# frame for canvas displaying PDF, label shows page number
 	imgframe = ttk.LabelFrame(frame, padding=5, labelanchor='n', text='%i/%i'%(1,pages))
@@ -366,10 +381,8 @@ def display_pdf(format: Format = None):
 				with open(os.path.join(DIR, "formats", format.name + ".pkl"), 'xb') as f:
 					pickle.dump(format, f)
 				
-				# clear the window and go back to format selection
-				root.withdraw()
-				frame.destroy()
-				format_select()
+				# clear the window and return to format selection
+				back()
 
 		if PREVIEW:
 			scan_docs(format)
@@ -383,7 +396,7 @@ def display_pdf(format: Format = None):
 	return
 
 
-# Scan docs using selected format
+# Scan docs using selected format - no GUI
 def scan_docs(format: Format):
 	root.quit()
 	# put a timestamp in the file name
@@ -401,7 +414,10 @@ def scan_docs(format: Format):
 			for area in format: # per ScanArea
 				pix = doc[area.page].get_pixmap(dpi=300, clip=area.rect)
 				img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples_mv)
-				rowdata.append(pytess.image_to_string(img, format.lang))
+
+				extract = pytess.image_to_string(img, format.lang).strip().replace("\n", " ")
+				#print(extract)
+				rowdata.append(extract)
 			
 			out.writerow(rowdata)
 	return

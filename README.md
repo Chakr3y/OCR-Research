@@ -1,5 +1,9 @@
 # ocr-research
-research project about OCR
+Experimental project about using OCR to compile text on PDFs into CSVs.
+The user specifies static bounding boxes to feed into OCR. This means that text between different documents need to be in the same locations, as the program will not detect text shifting slightly.
+
+# output format
+Each file scanned will have the text extracted into the same row, per file.
 
 # instructions
 1. Run `python Main.py`.
@@ -33,5 +37,5 @@ With the exception of tesseract, you can install using [requirements.txt](/requi
 - Refactor for readability
 - Finish Format creator UI
 	- [ ] Undo button
-	- [ ] Find a way to label the scan areas
-- Enhance OCR
+	- [ ] Add naming for scan areas
+- Improve OCR
