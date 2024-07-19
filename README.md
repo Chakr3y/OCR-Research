@@ -15,6 +15,8 @@ Each file scanned will have the text extracted into the same row, per file.
 			- Undo button to be implemented
 		1. Select language to scan for.
 			- The program will automatically detect installed language packs for tesseract.
+1. Select Scan or Preview
+	- Preview displays the selected PDFs with bounding boxes overlaid where the file will be scanned for text. Scan will immediately skip this step.
 1. The output file can be found in the [`output`](/output) folder of the directory.
 
 - For the time being, Formats can be deleted by deleting the file with the corresponding name in the [`formats`](/formats) folder.
