@@ -25,8 +25,9 @@ If the output is inaccurate, try expanding the scanning area.
 - Format - a configuration that groups areas to scan in each file, meaning that each file scanned needs to have text at the same locations.
 
 # dependencies
-With the exception of tesseract, you can install using [requirements.txt](/requirements.txt).
 - [tesseract](https://github.com/tesseract-ocr/tesseract)
+
+Python dependencies. You can install using [requirements.txt](/requirements.txt).
 - PyMuPDF
 - Pillow
 - pytesseract
