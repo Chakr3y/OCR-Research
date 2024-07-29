@@ -5,7 +5,7 @@ The user specifies static bounding boxes to feed into OCR. This means that text 
 # output format
 Each file scanned will have the text extracted into the same row, per file.
 
-# instructions
+# usage
 1. Run `python main.py`.
 1. Select PDF files to scan. Multiple are acceptable.
 1. Select a Format or create a new one.
@@ -37,8 +37,9 @@ Python dependencies \(install using [requirements.txt](/requirements.txt)\)
 **Note**: Make sure that the directory `C:/Program Files/Tesseract-OCR/tessdata` exists \(and that `tesseract` is registered as a CMD command?\).
 
 # todo
-- Refactor for readability
-- Finish Format creator UI
+- Improve accuracy
+- Finish Format creator UI 
 	- [ ] Undo button
+	- [ ] Tool-based editing
 	- [ ] Add naming/numbering scan areas
-- Improve OCR
+- Refactor for readability
