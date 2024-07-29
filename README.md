@@ -24,12 +24,12 @@ Each file scanned will have the text extracted into the same row, per file.
 If the output is inaccurate, try expanding the scanning area.
 
 # terminology
-- Format - a configuration that groups areas to scan in each file, meaning that each file scanned needs to have text at the same locations.
+- Format - a scanning configuration that groups areas to scan in a batch of files \(each file scanned needs to have text at the same locations\)
 
 # dependencies
 - [tesseract](https://github.com/tesseract-ocr/tesseract)
 
-Python dependencies. You can install using [requirements.txt](/requirements.txt).
+Python dependencies \(install using [requirements.txt](/requirements.txt)\)
 - PyMuPDF
 - Pillow
 - pytesseract
