@@ -33,6 +33,7 @@ Python dependencies \(install using [requirements.txt](/requirements.txt)\)
 - PyMuPDF
 - Pillow
 - pytesseract
+- pyQt6
 
 **Note**: Make sure that the directory `C:/Program Files/Tesseract-OCR/tessdata` exists \(and that `tesseract` is registered as a CMD command?\).
 

@@ -10,9 +10,12 @@ from tkinter.filedialog import askopenfilenames
 from tkinter.simpledialog import askstring, Dialog
 from tkinter.messagebox import showerror
 
+import PyQt6 as qt
+
 import fitz
 from PIL import Image, ImageTk
 import pytesseract as pytess
+
 
 # script's directory
 DIR = os.path.abspath(os.path.dirname(__file__))
